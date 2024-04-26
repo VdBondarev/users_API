@@ -42,11 +42,11 @@ public class User implements UserDetails {
     private String password;
 
     @Column(nullable = false)
-    @StartsWithCapital(message = "First name should start with a capital letter")
+    @StartsWithCapital
     private String firstName;
 
     @Column(nullable = false)
-    @StartsWithCapital(message = "Last name should start with a capital letter")
+    @StartsWithCapital
     private String lastName;
 
     @ManyToMany
@@ -57,7 +57,7 @@ public class User implements UserDetails {
     )
     private Set<Role> roles = Set.of(new Role(1L));
 
-    @Past(message = "Birth date should be before today")
+    @Past
     @NotNull
     private LocalDate birthDate;
 

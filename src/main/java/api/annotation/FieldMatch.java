@@ -19,11 +19,4 @@ public @interface FieldMatch {
     Class<? extends Payload>[] payload() default {};
     String password();
     String repeatPassword();
-
-    @Target({ElementType.TYPE, ElementType.ANNOTATION_TYPE})
-    @Retention(RetentionPolicy.RUNTIME)
-    @Documented
-    @interface List {
-        FieldMatch[] value();
-    }
 }
