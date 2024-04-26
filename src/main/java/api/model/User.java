@@ -41,11 +41,11 @@ public class User implements UserDetails {
     @Column(nullable = false)
     private String password;
 
-    @Column(nullable = false, name = "first_name")
+    @Column(nullable = false)
     @StartsWithCapital(message = "First name should start with a capital letter")
     private String firstName;
 
-    @Column(nullable = false, name = "last_name")
+    @Column(nullable = false)
     @StartsWithCapital(message = "Last name should start with a capital letter")
     private String lastName;
 
