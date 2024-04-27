@@ -1,6 +1,6 @@
 package api.annotation.validator;
 
-import static api.constant.ConstantsHolder.PHONE_VALIDATION_REGEX;
+import static api.constant.OtherConstantsHolder.PHONE_VALIDATION_REGEX;
 
 import api.annotation.PhoneNumber;
 import jakarta.validation.ConstraintValidator;

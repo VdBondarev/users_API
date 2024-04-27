@@ -8,4 +8,8 @@ public interface UserService {
     UserResponseDto getMyInfo(User user);
 
     UserResponseDto updateMyInfo(UserUpdateRequestDto requestDto, User user);
+
+    void delete(Long id);
+
+    UserResponseDto updateRole(Long id, String roleName);
 }

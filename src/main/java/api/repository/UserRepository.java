@@ -11,6 +11,9 @@ import org.springframework.stereotype.Repository;
 public interface UserRepository extends JpaRepository<User, Long>,
         JpaSpecificationExecutor<User> {
 
+    @Query("FROM User user LEFT JOIN FETCH  user.roles WHERE user.id = :id")
+    Optional<User> findByIdWIthRoles(Long id);
+
     @Query("FROM User user LEFT JOIN FETCH user.roles WHERE user.email = :email")
     Optional<User> findByEmailWithRoles(String email);
 

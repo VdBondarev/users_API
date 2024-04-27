@@ -1,9 +1,9 @@
 package api.exception;
 
-import static api.constant.ConstantsHolder.ERRORS;
-import static api.constant.ConstantsHolder.MESSAGE;
-import static api.constant.ConstantsHolder.STATUS;
-import static api.constant.ConstantsHolder.TIME_STAMP;
+import static api.constant.OtherConstantsHolder.ERRORS;
+import static api.constant.OtherConstantsHolder.MESSAGE;
+import static api.constant.OtherConstantsHolder.STATUS;
+import static api.constant.OtherConstantsHolder.TIME_STAMP;
 
 import jakarta.persistence.EntityNotFoundException;
 import java.time.LocalDateTime;
