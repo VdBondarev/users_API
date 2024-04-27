@@ -13,7 +13,7 @@ import java.lang.annotation.Target;
 @Target(ElementType.FIELD)
 @Constraint(validatedBy = LessThanYearsFromNowValidator.class)
 @Documented
-public @interface LessThanYearsFromNow {
+public @interface BeforeThanYearsFromNow {
     String message() default "Date should be before the specified value";
     Class<?>[] groups() default {};
     Class<? extends Payload>[] payload() default {};
