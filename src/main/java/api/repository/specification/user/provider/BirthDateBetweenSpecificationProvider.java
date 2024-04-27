@@ -19,11 +19,6 @@ public class BirthDateBetweenSpecificationProvider
     public Specification<User> getSpecification(List<LocalDate> birthDate) {
         LocalDate from = birthDate.get(ZERO);
         LocalDate to = birthDate.get(ONE);
-        if (!from.isBefore(to)) {
-            throw new IllegalArgumentException("""
-                    First date of searching by birthDate should be before the second date
-                    """);
-        }
         return (root, query, criteriaBuilder)
                 -> criteriaBuilder.between(
                         root.get(BIRTH_DATE_COLUMN), from, to
