@@ -40,7 +40,7 @@ public class UserController {
     @PutMapping("/update")
     public UserResponseDto updateMyInfo(@RequestBody @Valid UserUpdateRequestDto requestDto,
                                         Authentication authentication) {
-        return userService.updateMyInfo(requestDto);
+        return userService.updateMyInfo(requestDto, getUser(authentication));
     }
 
     private User getUser(Authentication authentication) {

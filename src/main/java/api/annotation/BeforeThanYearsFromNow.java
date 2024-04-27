@@ -14,7 +14,7 @@ import java.lang.annotation.Target;
 @Constraint(validatedBy = LessThanYearsFromNowValidator.class)
 @Documented
 public @interface BeforeThanYearsFromNow {
-    String message() default "Date should be before the specified value";
+    String message() default "is invalid";
     Class<?>[] groups() default {};
     Class<? extends Payload>[] payload() default {};
     int value() default -1;

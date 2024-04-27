@@ -7,5 +7,5 @@ import api.model.User;
 public interface UserService {
     UserResponseDto getMyInfo(User user);
 
-    UserResponseDto updateMyInfo(UserUpdateRequestDto requestDto);
+    UserResponseDto updateMyInfo(UserUpdateRequestDto requestDto, User user);
 }
