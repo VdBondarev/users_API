@@ -7,7 +7,6 @@ import api.annotation.StartsWithCapital;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Past;
 import jakarta.validation.constraints.Size;
 import java.time.LocalDate;
 
@@ -25,7 +24,6 @@ public record UserRegistrationRequestDto(
         String address,
         @PhoneNumber
         String phoneNumber,
-        @Past
         @NotNull
         @BeforeThanYearsFromNow
         LocalDate birthDate,

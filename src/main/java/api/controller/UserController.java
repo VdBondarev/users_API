@@ -1,13 +1,16 @@
 package api.controller;
 
 import api.dto.UserResponseDto;
+import api.dto.UserSearchParametersRequestDto;
 import api.dto.UserUpdateRequestDto;
 import api.model.User;
 import api.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
@@ -63,6 +66,23 @@ public class UserController {
     public UserResponseDto updateRole(@PathVariable Long id,
                                       @RequestParam(name = "role_name") String roleName) {
         return userService.updateRole(id, roleName);
+    }
+
+    @Operation(summary = "Search users by params",
+            description = """
+                    This action is allowed for admins only.
+                    You can search by almost any params you want, except for password and id
+                    It will look like that:
+                    By email, firstName, lastName, address, phoneNumber: '%value%'
+                                        
+                    By birthDate: 'BETWEEN (firstElement, secondElement)'
+                    """)
+    @GetMapping("/search")
+    @PreAuthorize("hasAuthority('ADMIN')")
+    public List<UserResponseDto> search(
+            @RequestBody @Valid UserSearchParametersRequestDto requestDto,
+            Pageable pageable) {
+        return userService.search(requestDto, pageable);
     }
 
     private User getUser(Authentication authentication) {

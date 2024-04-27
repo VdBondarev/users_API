@@ -9,4 +9,6 @@ public interface OtherConstantsHolder {
     String ROLE_USER = "USER";
     String ROLE_ADMIN = "ADMIN";
     int ONE = 1;
+    int TWO = 2;
+    int ZERO = 0;
 }

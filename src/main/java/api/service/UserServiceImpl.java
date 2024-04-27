@@ -5,15 +5,21 @@ import static api.constant.OtherConstantsHolder.ROLE_ADMIN;
 import static api.constant.OtherConstantsHolder.ROLE_USER;
 
 import api.dto.UserResponseDto;
+import api.dto.UserSearchParametersRequestDto;
 import api.dto.UserUpdateRequestDto;
 import api.mapper.UserMapper;
 import api.model.Role;
 import api.model.RoleName;
 import api.model.User;
 import api.repository.UserRepository;
+import api.repository.specification.SpecificationBuilder;
 import jakarta.persistence.EntityNotFoundException;
+import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -23,6 +29,7 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final UserMapper userMapper;
     private final PasswordEncoder passwordEncoder;
+    private final SpecificationBuilder<User, UserSearchParametersRequestDto> specificationBuilder;
 
     @Override
     public UserResponseDto getMyInfo(User user) {
@@ -31,12 +38,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserResponseDto updateMyInfo(UserUpdateRequestDto requestDto, User user) {
-        if (requestDto.address() != null && !requestDto.address().isEmpty()) {
-            user.setAddress(requestDto.address());
-        }
-        if (requestDto.birthDate() != null) {
-            user.setBirthDate(requestDto.birthDate());
-        }
+        user = userMapper.toModel(user, requestDto);
         if (requestDto.email() != null && !requestDto.email().isEmpty()) {
             if (userRepository.findByEmailWithoutRoles(requestDto.email()).isPresent()) {
                 throw new IllegalArgumentException("""
@@ -45,12 +47,6 @@ public class UserServiceImpl implements UserService {
                         """);
             }
             user.setEmail(requestDto.email());
-        }
-        if (requestDto.firstName() != null && !requestDto.firstName().isEmpty()) {
-            user.setFirstName(requestDto.firstName());
-        }
-        if (requestDto.lastName() != null && !requestDto.lastName().isEmpty()) {
-            user.setLastName(requestDto.lastName());
         }
         if (requestDto.password() != null) {
             String encodedPassword = passwordEncoder.encode(requestDto.password());
@@ -82,6 +78,29 @@ public class UserServiceImpl implements UserService {
         }
         userRepository.save(user);
         return userMapper.toResponseDto(user);
+    }
+
+    @Override
+    public List<UserResponseDto> search(
+            UserSearchParametersRequestDto requestDto, Pageable pageable) {
+        if (isEmpty(requestDto)) {
+            throw new IllegalArgumentException("Searching should be done by at least 1 param");
+        }
+        Specification<User> specification = specificationBuilder.build(requestDto);
+        return userRepository.findAll(specification, pageable)
+                .stream()
+                .map(userMapper::toResponseDto)
+                .collect(Collectors.toList());
+    }
+
+    private boolean isEmpty(UserSearchParametersRequestDto requestDto) {
+        return requestDto == null
+                || ((requestDto.firstName() == null || requestDto.firstName().isEmpty())
+                && (requestDto.lastName() == null || requestDto.lastName().isEmpty())
+                && (requestDto.address() == null || requestDto.address().isEmpty())
+                && (requestDto.phoneNumber() == null || requestDto.phoneNumber().isEmpty())
+                && (requestDto.email() == null || requestDto.email().isEmpty())
+                && (requestDto.birthDate() == null));
     }
 
     private boolean alreadyIs(User user, String roleName) {
