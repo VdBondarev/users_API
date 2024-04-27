@@ -1,6 +1,7 @@
 package api.dto;
 
 import api.annotation.FieldMatch;
+import api.annotation.LessThanYearsFromNow;
 import api.annotation.PhoneNumber;
 import api.annotation.StartsWithCapital;
 import jakarta.validation.constraints.Email;
@@ -26,6 +27,7 @@ public record UserRegistrationRequestDto(
         String phoneNumber,
         @Past
         @NotNull
+        @LessThanYearsFromNow(18)
         LocalDate birthDate,
         @NotBlank
         @Size(min = 8, max = 35)
