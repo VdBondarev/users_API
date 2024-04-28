@@ -8,7 +8,6 @@ import api.exception.RegistrationException;
 import api.mapper.UserMapper;
 import api.model.User;
 import api.repository.UserRepository;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -29,9 +28,9 @@ public class AuthenticationService {
             throws RegistrationException {
         if (userRepository.findByEmailWithoutRoles(requestDto.email()).isPresent()) {
             throw new RegistrationException("""
-                User with passed email already registered.
-                Try another one
-                """);
+                    User with passed email is already registered
+                    Try another one
+                    """);
         }
         String encodedPassword = passwordEncoder.encode(requestDto.password());
         User user = userMapper.toModel(requestDto)
@@ -40,7 +39,7 @@ public class AuthenticationService {
         return userMapper.toResponseDto(user);
     }
 
-    public UserLoginResponseDto login(@Valid UserLoginRequestDto requestDto) {
+    public UserLoginResponseDto login(UserLoginRequestDto requestDto) {
         final Authentication authentication =
                 authenticationManager.authenticate(
                         new UsernamePasswordAuthenticationToken(

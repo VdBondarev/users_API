@@ -11,4 +11,5 @@ public interface OtherConstantsHolder {
     int ONE = 1;
     int TWO = 2;
     int ZERO = 0;
+    String EMPTY = " ";
 }

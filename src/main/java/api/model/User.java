@@ -1,5 +1,6 @@
 package api.model;
 
+import api.annotation.BeforeThanYearsFromNow;
 import api.annotation.PhoneNumber;
 import api.annotation.StartsWithCapital;
 import jakarta.persistence.Column;
@@ -12,7 +13,6 @@ import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Past;
 import java.time.LocalDate;
 import java.util.Collection;
 import java.util.Set;
@@ -57,13 +57,14 @@ public class User implements UserDetails {
     )
     private Set<Role> roles = Set.of(new Role(1L));
 
-    @Past
+    @BeforeThanYearsFromNow
     @NotNull
     private LocalDate birthDate;
 
     private String address;
 
     @PhoneNumber
+    @Column(unique = true)
     private String phoneNumber;
 
     @Column(name = "is_deleted", nullable = false)

@@ -28,6 +28,9 @@ public class Role implements GrantedAuthority {
 
     public Role(Long id) {
         this.id = id;
+        if (id == 2) {
+            name = RoleName.ADMIN;
+        }
     }
 
     @Override

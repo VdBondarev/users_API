@@ -18,4 +18,6 @@ public interface UserService {
     UserResponseDto updateRole(Long id, String roleName);
 
     List<UserResponseDto> search(UserSearchParametersRequestDto requestDto, Pageable pageable);
+
+    UserResponseDto findById(Long id);
 }
