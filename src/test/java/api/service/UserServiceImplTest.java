@@ -1,5 +1,8 @@
 package api.service;
 
+import static api.constant.CriteriaQueryConstantsHolder.EMAIL_COLUMN;
+import static api.constant.CriteriaQueryConstantsHolder.FIRST_NAME_COLUMN;
+import static api.constant.CriteriaQueryConstantsHolder.LAST_NAME_COLUMN;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.when;
@@ -14,6 +17,7 @@ import api.model.User;
 import api.repository.UserRepository;
 import api.repository.specification.SpecificationBuilder;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import org.junit.jupiter.api.BeforeEach;
@@ -23,6 +27,10 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 @ExtendWith(MockitoExtension.class)
@@ -178,7 +186,84 @@ class UserServiceImplTest {
     }
 
     @Test
-    void search() {
+    @DisplayName("Verify that search() method works as expected with valid input params")
+    void search_ValidInput_ReturnsValidResponse() {
+        UserSearchParametersRequestDto paramsRequestDto = createUserSearchParametersRequestDto(
+                "Test",
+                "Test",
+                "test@email.com",
+                null,
+                null,
+                null
+        );
+
+        Specification<User> firstNameSpecification = (root, query, criteriaBuilder)
+                -> criteriaBuilder.like(root.get(FIRST_NAME_COLUMN), paramsRequestDto.firstName());
+
+        Specification<User> lastNameSpecification = (root, query, criteriaBuilder)
+                -> criteriaBuilder.like(root.get(LAST_NAME_COLUMN), paramsRequestDto.lastName());
+
+        Specification<User> emailSpecification = (root, query, criteriaBuilder)
+                -> criteriaBuilder.like(root.get(EMAIL_COLUMN), paramsRequestDto.email());
+
+        Specification<User> specification;
+        specification = firstNameSpecification.and(lastNameSpecification).and(emailSpecification);
+
+        PageRequest pageable = PageRequest.of(0, 5);
+        Page<User> page = new PageImpl<>(
+                List.of(user),
+                pageable,
+                List.of(user).size());
+
+        UserResponseDto expected = createUserResponseDto(user);
+
+        when(specificationBuilder.build(paramsRequestDto)).thenReturn(specification);
+        when(userRepository.findAll(specification, pageable)).thenReturn(page);
+        when(userMapper.toResponseDto(user)).thenReturn(expected);
+
+        List<UserResponseDto> expectedList = List.of(expected);
+        List<UserResponseDto> actualList = userService.search(paramsRequestDto, pageable);
+
+        assertEquals(expectedList, actualList);
+        assertEquals(expected, actualList.get(0));
+    }
+
+    @Test
+    @DisplayName("Verify that search() throws an exception when passing non-valid params")
+    void search_NullPassedParams_ThrowsException() {
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
+                () -> userService.search(null, PageRequest.of(0, 5)));
+
+        String expected = "Searching should be done by at least 1 param";
+        String actual = exception.getMessage();
+
+        assertEquals(expected, actual);
+
+        exception = assertThrows(IllegalArgumentException.class, () -> userService.search(
+                createUserSearchParametersRequestDto(
+                        null, null, null, null, null, null
+                ), PageRequest.of(0, 5)));
+
+        actual = exception.getMessage();
+
+        assertEquals(expected, actual);
+    }
+
+    private UserSearchParametersRequestDto createUserSearchParametersRequestDto(
+            String firstName,
+            String lastName,
+            String email,
+            String address,
+            String phoneNumber,
+            List<LocalDate> birthDate
+    ) {
+        return new UserSearchParametersRequestDto(
+                firstName,
+                lastName,
+                email,
+                address,
+                phoneNumber,
+                birthDate);
     }
 
     private User createUser(
@@ -234,52 +319,3 @@ class UserServiceImplTest {
         );
     }
 }
-
-/**
-
- *
- *
- *
- *     @Override
- *     public List<UserResponseDto> search(
- *             UserSearchParametersRequestDto requestDto, Pageable pageable) {
- *         if (isEmpty(requestDto)) {
- *             throw new IllegalArgumentException("Searching should be done by at least 1 param");
- *         }
- *         Specification<User> specification = specificationBuilder.build(requestDto);
- *         return userRepository.findAll(specification, pageable)
- *                 .stream()
- *                 .map(userMapper::toResponseDto)
- *                 .collect(Collectors.toList());
- *     }
- *
- *     private boolean isEmpty(UserSearchParametersRequestDto requestDto) {
- *         return requestDto == null
- *                 || ((requestDto.firstName() == null || requestDto.firstName().isEmpty())
- *                 && (requestDto.lastName() == null || requestDto.lastName().isEmpty())
- *                 && (requestDto.address() == null || requestDto.address().isEmpty())
- *                 && (requestDto.phoneNumber() == null || requestDto.phoneNumber().isEmpty())
- *                 && (requestDto.email() == null || requestDto.email().isEmpty())
- *                 && (requestDto.birthDate() == null));
- *     }
- *
- *     private boolean alreadyIs(User user, String roleName) {
- *         return (isJustUser(user)
- *                 && roleName.equalsIgnoreCase(ROLE_USER))
- *                 || (hasRole(user, ROLE_ADMIN)
- *                 && roleName.equalsIgnoreCase(ROLE_ADMIN));
- *     }
- *
- *     private boolean isJustUser(User user) {
- *         return user.getRoles().size() == ONE;
- *     }
- *
- *     private boolean hasRole(User user, String roleName) {
- *         return user.getRoles()
- *                 .stream()
- *                 .map(Role::getName)
- *                 .toList()
- *                 .contains(RoleName.fromString(roleName));
- *     }
- * }
- */
