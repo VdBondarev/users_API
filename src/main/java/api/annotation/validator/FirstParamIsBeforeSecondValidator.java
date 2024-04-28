@@ -15,6 +15,6 @@ public class FirstParamIsBeforeSecondValidator
     @Override
     public boolean isValid(List<LocalDate> birthDate,
                            ConstraintValidatorContext constraintValidatorContext) {
-        return !birthDate.get(ZERO).isAfter(birthDate.get(ONE));
+        return birthDate == null || !birthDate.get(ZERO).isAfter(birthDate.get(ONE));
     }
 }

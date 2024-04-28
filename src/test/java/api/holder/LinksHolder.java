@@ -8,4 +8,6 @@ public interface LinksHolder {
             "classpath:database/delete-all-users_roles-from-database.sql";
     String INSERT_ADMIN_ROLES_FILE_PATH =
             "classpath:database/insert-admin-roles-to-user_roles-table.sql";
+    String INSERT_FIVE_USERS_FILE_PATH =
+            "classpath:database/insert-five-users-to-database.sql";
 }
