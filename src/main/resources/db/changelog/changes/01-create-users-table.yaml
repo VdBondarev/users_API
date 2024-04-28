@@ -45,6 +45,8 @@ databaseChangeLog:
               - column:
                   name: phone_number
                   type: VARCHAR(255)
+                  constraints:
+                    unique: true
               - column:
                   name: is_deleted
                   type: BOOLEAN

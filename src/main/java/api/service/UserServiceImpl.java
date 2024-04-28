@@ -14,6 +14,7 @@ import api.model.User;
 import api.repository.UserRepository;
 import api.repository.specification.SpecificationBuilder;
 import jakarta.persistence.EntityNotFoundException;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -70,12 +71,16 @@ public class UserServiceImpl implements UserService {
         if (alreadyIs(user, roleName)) {
             return userMapper.toResponseDto(user);
         }
+        Set<Role> roles = new HashSet<>();
+
         if (hasRole(user, ROLE_ADMIN)
                 && roleName.equalsIgnoreCase(ROLE_USER)) {
-            user.setRoles(Set.of(new Role(1L)));
+            roles.add(new Role(1L));
         } else {
-            user.setRoles(Set.of(new Role(1L), new Role(2L)));
+            roles.add(new Role(1L));
+            roles.add(new Role(2L));
         }
+        user.setRoles(roles);
         userRepository.save(user);
         return userMapper.toResponseDto(user);
     }
@@ -91,6 +96,14 @@ public class UserServiceImpl implements UserService {
                 .stream()
                 .map(userMapper::toResponseDto)
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public UserResponseDto findById(Long id) {
+        User user = userRepository.findByIdWithoutRoles(id)
+                .orElseThrow(() -> new EntityNotFoundException(
+                        "Can't find a user by id " + id));
+        return userMapper.toResponseDto(user);
     }
 
     private boolean isEmpty(UserSearchParametersRequestDto requestDto) {

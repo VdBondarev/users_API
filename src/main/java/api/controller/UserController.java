@@ -85,6 +85,13 @@ public class UserController {
         return userService.search(requestDto, pageable);
     }
 
+    @Operation(summary = "Get a user by id")
+    @GetMapping("/{id}")
+    @PreAuthorize("hasAuthority('ADMIN')")
+    public UserResponseDto findById(@PathVariable Long id) {
+        return userService.findById(id);
+    }
+
     private User getUser(Authentication authentication) {
         return (User) authentication.getPrincipal();
     }

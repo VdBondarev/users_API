@@ -19,4 +19,7 @@ public interface UserRepository extends JpaRepository<User, Long>,
 
     @Query("FROM User user WHERE user.email = :email")
     Optional<User> findByEmailWithoutRoles(String email);
+
+    @Query("FROM User user WHERE user.id = :id")
+    Optional<User> findByIdWithoutRoles(Long id);
 }

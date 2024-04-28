@@ -6,4 +6,5 @@ public interface SecurityConstantsHolder {
     String BEARER = "Bearer";
     String JWT = "JWT";
     int TOKEN_START = 7;
+    String JWT_PATTERN = "^[A-Za-z0-9-_=]+\\.[A-Za-z0-9-_=]+\\.[A-Za-z0-9-_.+/=]*$";
 }

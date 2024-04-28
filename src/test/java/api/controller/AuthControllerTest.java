@@ -1,8 +1,11 @@
 package api.controller;
 
+import static api.constant.SecurityConstantsHolder.JWT_PATTERN;
 import static api.holder.LinksHolder.DELETE_ALL_USERS_FILE_PATH;
+import static api.holder.LinksHolder.DELETE_ALL_USER_ROLES_FILE_PATH;
 import static api.holder.LinksHolder.INSERT_USER_FILE_PATH;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -41,11 +44,17 @@ class AuthControllerTest {
     }
 
     @Sql(
-            scripts = { DELETE_ALL_USERS_FILE_PATH },
+            scripts = {
+                    DELETE_ALL_USERS_FILE_PATH,
+                    DELETE_ALL_USER_ROLES_FILE_PATH
+            },
             executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD
     )
     @Sql(
-            scripts = { DELETE_ALL_USERS_FILE_PATH },
+            scripts = {
+                    DELETE_ALL_USERS_FILE_PATH,
+                    DELETE_ALL_USER_ROLES_FILE_PATH
+            },
             executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD
     )
     @Test
@@ -87,18 +96,23 @@ class AuthControllerTest {
             When passing already registered email
             """)
     @Sql(
-            scripts = { DELETE_ALL_USERS_FILE_PATH, INSERT_USER_FILE_PATH },
+            scripts = {
+                    DELETE_ALL_USERS_FILE_PATH,
+                    INSERT_USER_FILE_PATH
+            },
             executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD
     )
     @Sql(
-            scripts = { DELETE_ALL_USERS_FILE_PATH },
+            scripts = {
+                    DELETE_ALL_USERS_FILE_PATH,
+            },
             executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD
     )
     void register_AlreadyRegisteredEmail_Failure() throws Exception {
         UserRegistrationRequestDto requestDto = createUserRegistrationRequestDto(
                 "Test",
                 "Test",
-                "admin@example.com",
+                "user@example.com",
                 "Test",
                 "+3802222",
                 LocalDate.of(2000, 03, 03),
@@ -132,12 +146,11 @@ class AuthControllerTest {
             When passing non-valid params
             """)
     @Sql(
-            scripts = { DELETE_ALL_USERS_FILE_PATH, INSERT_USER_FILE_PATH },
+            scripts = {
+                    DELETE_ALL_USERS_FILE_PATH,
+                    INSERT_USER_FILE_PATH
+            },
             executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD
-    )
-    @Sql(
-            scripts = { DELETE_ALL_USERS_FILE_PATH },
-            executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD
     )
     void register_NonValidParam_Failure() throws Exception {
         UserRegistrationRequestDto requestDto = createUserRegistrationRequestDto(
@@ -162,18 +175,25 @@ class AuthControllerTest {
     }
 
     @Sql(
-            scripts = { DELETE_ALL_USERS_FILE_PATH, INSERT_USER_FILE_PATH },
+            scripts = {
+                    DELETE_ALL_USERS_FILE_PATH,
+                    INSERT_USER_FILE_PATH,
+                    DELETE_ALL_USER_ROLES_FILE_PATH
+            },
             executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD
     )
     @Sql(
-            scripts = { DELETE_ALL_USERS_FILE_PATH },
+            scripts = {
+                    DELETE_ALL_USERS_FILE_PATH,
+                    DELETE_ALL_USER_ROLES_FILE_PATH
+            },
             executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD
     )
     @Test
     @DisplayName("Verify that login() method works as expected")
     void login_ValidInput_Success() throws Exception {
         UserLoginRequestDto requestDto =
-                new UserLoginRequestDto("admin@example.com", "1234567890");
+                new UserLoginRequestDto("user@example.com", "1234567890");
 
         String content = objectMapper.writeValueAsString(requestDto);
 
@@ -187,8 +207,7 @@ class AuthControllerTest {
                 result.getResponse().getContentAsString(), UserLoginResponseDto.class
         );
 
-        // expecting that JWT token should be of length 168 symbols
-        assertEquals(168, responseDto.token().length());
+        assertTrue(responseDto.token().matches(JWT_PATTERN));
     }
 
     private UserRegistrationRequestDto createUserRegistrationRequestDto(

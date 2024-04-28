@@ -1,8 +1,12 @@
 package api.controller;
 
 import static api.constant.OtherConstantsHolder.EMPTY;
+import static api.constant.OtherConstantsHolder.ONE;
+import static api.constant.OtherConstantsHolder.TWO;
 import static api.constant.SecurityConstantsHolder.BEARER;
 import static api.holder.LinksHolder.DELETE_ALL_USERS_FILE_PATH;
+import static api.holder.LinksHolder.DELETE_ALL_USER_ROLES_FILE_PATH;
+import static api.holder.LinksHolder.INSERT_ADMIN_ROLES_FILE_PATH;
 import static api.holder.LinksHolder.INSERT_USER_FILE_PATH;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
@@ -13,6 +17,7 @@ import api.dto.UserResponseDto;
 import api.dto.UserUpdateRequestDto;
 import api.mapper.UserMapper;
 import api.model.User;
+import api.repository.UserRepository;
 import api.security.JwtUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.time.LocalDate;
@@ -26,6 +31,7 @@ import org.springframework.http.MediaType;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
@@ -43,6 +49,8 @@ class UserControllerTest {
     private AuthenticationManager authenticationManager;
     @Autowired
     private UserMapper userMapper;
+    @Autowired
+    private UserRepository userRepository;
 
     @BeforeAll
     static void beforeAll(@Autowired WebApplicationContext applicationContext) {
@@ -53,15 +61,20 @@ class UserControllerTest {
     }
 
     @Sql(
-            scripts = { DELETE_ALL_USERS_FILE_PATH, INSERT_USER_FILE_PATH },
+            scripts = {
+                    DELETE_ALL_USERS_FILE_PATH,
+                    INSERT_USER_FILE_PATH
+            },
             executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD
     )
     @Sql(
-            scripts = { DELETE_ALL_USERS_FILE_PATH },
+            scripts = {
+                    DELETE_ALL_USERS_FILE_PATH
+            },
             executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD
     )
     @Test
-    @DisplayName("Verify that updateMyInfo works as valid input")
+    @DisplayName("Verify that updateMyInfo works as expected with valid input")
     void updateMyInfo_ValidInput_Success() throws Exception {
         UserUpdateRequestDto requestDto = createUpdateRequestDto(
                 null,
@@ -75,7 +88,7 @@ class UserControllerTest {
         );
 
         // expecting that this user is already added to the database
-        String email = "admin@example.com";
+        String email = "user@example.com";
 
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
@@ -105,18 +118,80 @@ class UserControllerTest {
         assertEquals(expected, actual);
     }
 
-    private UserResponseDto getUserResponseDto(Authentication authentication, String email) {
-        User user = (User) authentication.getPrincipal();
-        user.setEmail(email);
-        return userMapper.toResponseDto(user);
+    @Sql(
+            scripts = {
+                    DELETE_ALL_USERS_FILE_PATH,
+                    INSERT_USER_FILE_PATH,
+                    DELETE_ALL_USER_ROLES_FILE_PATH
+            },
+            executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD
+    )
+    @Sql(
+            scripts = {
+                    DELETE_ALL_USERS_FILE_PATH,
+                    DELETE_ALL_USER_ROLES_FILE_PATH
+            },
+            executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD
+    )
+    @DisplayName("""
+            Verify that updateRole() method works as expected
+            When updating user to admin
+            """)
+    @Test
+    @WithMockUser(username = "mockedUser@example.com", authorities = "ADMIN")
+    void updateRole_UserToAdmin_Success() throws Exception {
+        String roleName = "ADMIN";
+
+        Long id = 1L;
+
+        mockMvc.perform(
+                        put("/users/update/" + id)
+                                .param("role_name", roleName)
+                                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
+
+        // expecting that if get() throws NoSuchElementException, test will fail
+        User user = userRepository.findByIdWIthRoles(id).get();
+        assertEquals(TWO, user.getRoles().size());
     }
 
+    @Sql(
+            scripts = {
+                    DELETE_ALL_USERS_FILE_PATH,
+                    DELETE_ALL_USER_ROLES_FILE_PATH,
+                    INSERT_USER_FILE_PATH,
+                    INSERT_ADMIN_ROLES_FILE_PATH
+            },
+            executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD
+    )
+    @Sql(
+            scripts = {
+                    DELETE_ALL_USERS_FILE_PATH,
+                    DELETE_ALL_USER_ROLES_FILE_PATH
+            },
+            executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD
+    )
+    @DisplayName("""
+            Verify that updateRole() method works as expected
+            When updating admin to user
+            """)
     @Test
-    void delete() {
-    }
+    @WithMockUser(username = "mockedUser@example.com", authorities = "ADMIN")
+    void updateRole_AdminToUser_Success() throws Exception {
+        String roleName = "USER";
 
-    @Test
-    void updateRole() {
+        Long id = 1L;
+
+        mockMvc.perform(
+                put("/users/update/" + id)
+                        .param("role_name", roleName)
+                        .contentType(MediaType.APPLICATION_JSON)
+                )
+                .andExpect(status().isOk());
+
+        // expecting that if get() throws NoSuchElementException, test will fail
+        User user = userRepository.findByIdWIthRoles(id).get();
+        assertEquals(ONE, user.getRoles().size());
     }
 
     @Test
@@ -142,5 +217,11 @@ class UserControllerTest {
                 password,
                 repeatPassword
         );
+    }
+
+    private UserResponseDto getUserResponseDto(Authentication authentication, String email) {
+        User user = (User) authentication.getPrincipal();
+        user.setEmail(email);
+        return userMapper.toResponseDto(user);
     }
 }
