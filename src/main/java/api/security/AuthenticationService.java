@@ -8,7 +8,6 @@ import api.exception.RegistrationException;
 import api.mapper.UserMapper;
 import api.model.User;
 import api.repository.UserRepository;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -40,7 +39,7 @@ public class AuthenticationService {
         return userMapper.toResponseDto(user);
     }
 
-    public UserLoginResponseDto login(@Valid UserLoginRequestDto requestDto) {
+    public UserLoginResponseDto login(UserLoginRequestDto requestDto) {
         final Authentication authentication =
                 authenticationManager.authenticate(
                         new UsernamePasswordAuthenticationToken(
