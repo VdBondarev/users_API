@@ -8,11 +8,14 @@ import api.dto.UserResponseDto;
 import api.dto.UserSearchParametersRequestDto;
 import api.dto.UserUpdateRequestDto;
 import api.mapper.UserMapper;
+import api.model.Role;
+import api.model.RoleName;
 import api.model.User;
 import api.repository.UserRepository;
 import api.repository.specification.SpecificationBuilder;
 import java.time.LocalDate;
 import java.util.Optional;
+import java.util.Set;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -32,7 +35,6 @@ class UserServiceImplTest {
     private PasswordEncoder passwordEncoder;
     @Mock
     private SpecificationBuilder<User, UserSearchParametersRequestDto> specificationBuilder;
-    ;
     @InjectMocks
     private UserServiceImpl userService;
     private User user;
@@ -40,13 +42,15 @@ class UserServiceImplTest {
     @BeforeEach
     void setUp() {
         user = new User()
+                .setId(1L)
                 .setPassword("1234567890")
                 .setAddress("Test")
                 .setEmail("test@email.com")
                 .setFirstName("Test")
                 .setLastName("Test")
                 .setBirthDate(LocalDate.of(1980, 3, 3))
-                .setPhoneNumber("+38011111111");
+                .setPhoneNumber("+38011111111")
+                .setRoles(Set.of(new Role(1L)));
     }
 
     @Test
@@ -75,7 +79,8 @@ class UserServiceImplTest {
         UserResponseDto expected = createUserResponseDto(userUpdated);
 
         when(userMapper.toModel(userUpdated, requestDto)).thenReturn(userUpdated);
-        when(userRepository.findByEmailWithoutRoles(requestDto.email())).thenReturn(Optional.empty());
+        when(userRepository.findByEmailWithoutRoles(
+                requestDto.email())).thenReturn(Optional.empty());
         when(passwordEncoder.encode(requestDto.password())).thenReturn(requestDto.password());
         when(userRepository.save(userUpdated)).thenReturn(userUpdated);
         when(userMapper.toResponseDto(userUpdated)).thenReturn(expected);
@@ -121,7 +126,55 @@ class UserServiceImplTest {
     }
 
     @Test
-    void updateRole() {
+    @DisplayName("Verify that updateRole() works fine when updating user to user")
+    void updateUserRole_AlreadyCustomer_ReturnsNothingUpdated() {
+        UserResponseDto expected = createUserResponseDto(user);
+
+        when(userRepository.findByIdWIthRoles(user.getId())).thenReturn(Optional.of(user));
+        when(userMapper.toResponseDto(user)).thenReturn(expected);
+
+        UserResponseDto actual =
+                userService.updateRole(user.getId(), "USER");
+
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    @DisplayName("Verify that updateRole() works fine when updating admin to user")
+    void updateUserRole_UpdateManagerToCustomer_ReturnsUpdatedUser() {
+        Role userRole = new Role(1L);
+        userRole.setName(RoleName.USER);
+
+        Role admin = new Role(2L);
+        admin.setName(RoleName.ADMIN);
+
+        user.setRoles(Set.of(userRole, admin));
+
+        UserResponseDto expected = createUserResponseDto(user);
+
+        when(userRepository.findByIdWIthRoles(user.getId())).thenReturn(Optional.of(user));
+        when(userRepository.save(user)).thenReturn(user);
+        when(userMapper.toResponseDto(user)).thenReturn(expected);
+
+        UserResponseDto actual =
+                userService.updateRole(user.getId(), "USER");
+
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    @DisplayName("Verify that updateRole() works fine when updating user to admin")
+    void updateUserRole_UpdateCustomerToManager_ReturnsUpdatedUser() {
+        // expecting that user will be admin after updating
+        UserResponseDto expected = createUserResponseDto(user);
+
+        when(userRepository.findByIdWIthRoles(user.getId())).thenReturn(Optional.of(user));
+        when(userMapper.toResponseDto(user)).thenReturn(expected);
+
+        UserResponseDto actual =
+                userService.updateRole(user.getId(), "ADMIN");
+
+        assertEquals(expected, actual);
     }
 
     @Test
@@ -186,24 +239,6 @@ class UserServiceImplTest {
 
  *
  *
- *     @Override
- *     public UserResponseDto updateRole(Long id, String roleName) {
- *         RoleName.fromString(roleName); // just a check if role exists
- *         User user = userRepository.findByIdWIthRoles(id).orElseThrow(
- *                 () -> new EntityNotFoundException(
- *                         "User with passed id doesn't exist, id: " + id));
- *         if (alreadyIs(user, roleName)) {
- *             return userMapper.toResponseDto(user);
- *         }
- *         if (hasRole(user, ROLE_ADMIN)
- *                 && roleName.equalsIgnoreCase(ROLE_USER)) {
- *             user.setRoles(Set.of(new Role(1L)));
- *         } else {
- *             user.setRoles(Set.of(new Role(1L), new Role(2L)));
- *         }
- *         userRepository.save(user);
- *         return userMapper.toResponseDto(user);
- *     }
  *
  *     @Override
  *     public List<UserResponseDto> search(
