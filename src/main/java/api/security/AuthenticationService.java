@@ -29,9 +29,9 @@ public class AuthenticationService {
             throws RegistrationException {
         if (userRepository.findByEmailWithoutRoles(requestDto.email()).isPresent()) {
             throw new RegistrationException("""
-                User with passed email already registered.
-                Try another one
-                """);
+                    User with passed email is already registered
+                    Try another one
+                    """);
         }
         String encodedPassword = passwordEncoder.encode(requestDto.password());
         User user = userMapper.toModel(requestDto)
