@@ -56,7 +56,7 @@ To set up and run the project locally, follow these steps:
 
 - There are only 2 roles of users available: **USER and ADMIN roles**.
 - User has access to such endpoints as getting or updating their info.
-- But user doesn't get to update roles of other roles (and similar actions that require some permission). **(Remember it)**
+- But user doesn't get to update roles of other users (and similar actions that require some permission). **(Remember it)**
 
 ## Users managing
 
