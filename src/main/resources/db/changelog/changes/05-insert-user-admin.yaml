@@ -12,9 +12,9 @@ databaseChangeLog:
                   # password - 1234567890
                   { name: password, value: "$2a$10$pgIWyO86Wu8MkPWRlSwWVeKa283CeLZjCQUco5k7avrLi6xGpu3je" }
               - column:
-                  { name: first_name, value: "admin" }
+                  { name: first_name, value: "Admin" }
               - column:
-                  { name: last_name, value: "admin" }
+                  { name: last_name, value: "Admin" }
               - column:
                   { name: birth_date, value: "1980-01-01" }
               - column:
