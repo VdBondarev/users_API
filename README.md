@@ -7,6 +7,8 @@
 Welcome to USERS API made using Spring Boot.
 [See the example of requests to some endpoints by watching this video](https://www.loom.com/share/cbd5d2ebafda45a38d57762ea12b0d41?sid=2173edcc-05f7-40aa-94e0-0dc06b8091f9)
 
+## Properties in .env file are mocked, use yours (or you can use these pointed, but put your Google and GitHub properties for OAuth2).
+
 ## Technologies used
 
 - **Spring Boot (v3.2.2):** A super-powerful framework for creating Java-based applications (just like this one).
